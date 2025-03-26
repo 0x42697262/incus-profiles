@@ -1,0 +1,5 @@
+config: {}
+devices:
+  nvidia-gpu:
+    pci: "0000:01:00.0"
+    type: gpu
