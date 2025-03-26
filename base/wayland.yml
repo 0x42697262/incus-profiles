@@ -5,11 +5,14 @@ config:
     - mkdir -p /run/user/1000
     - chown chicken:chicken /run/user/1000
     - ln -sf /mnt/.sockets/wayland-1 /run/user/1000/wayland-1
-    - echo 'export WAYLAND_DISPLAY=wayland-1' >> /etc/profile
-    - echo 'export XDG_SESSION_TYPE=wayland' >> /etc/profile
-    - echo 'export QT_QPA_PLATFORM=wayland' >> /etc/profile
-    - echo 'export XDG_RUNTIME_DIR=/run/user/1000/' >> /etc/profile
-          
+    write_files:
+      - path: /etc/profile
+        append: true
+        content: |
+          export WAYLAND_DISPLAY=wayland-1
+          export XDG_SESSION_TYPE=wayland
+          export QT_QPA_PLATFORM=wayland
+          export XDG_RUNTIME_DIR=/run/user/1000      
 description: Configures Wayland
 devices:
   graphics:
