@@ -2,10 +2,13 @@ config:
   cloud-init.vendor-data: |
     #cloud-config
     runcmd:
-    - echo 'export WAYLAND_DISPLAY=wayland-1' >> /home/chicken/.bashrc
-    - echo 'export XDG_SESSION_TYPE=wayland' >> /home/chicken/.bashrc
-    - echo 'export QT_QPA_PLATFORM=wayland' >> /home/chicken/.bashrc
-    - echo 'export XDG_RUNTIME_DIR=/mnt/.sockets/' >> /home/chicken/.bashrc
+    - mkdir -p /run/user/1000
+    - chown chicken:chicken /run/user/1000
+    - ln -sf /mnt/.sockets/wayland-1 /run/user/1000/wayland-1
+    - echo 'export WAYLAND_DISPLAY=wayland-1' >> /etc/profile
+    - echo 'export XDG_SESSION_TYPE=wayland' >> /etc/profile
+    - echo 'export QT_QPA_PLATFORM=wayland' >> /etc/profile
+    - echo 'export XDG_RUNTIME_DIR=/run/user/1000/' >> /etc/profile
           
 description: Configures Wayland
 devices:
