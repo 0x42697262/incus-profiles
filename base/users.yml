@@ -3,6 +3,6 @@ config:
     #cloud-config
     users:
       - name: chicken
-        groups: wheel
+        groups: wheel, video
         sudo: ['ALL=(ALL) NOPASSWD:ALL']
 description: Configures the users
