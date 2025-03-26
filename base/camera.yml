@@ -1,0 +1,6 @@
+config: {}
+devices:
+  webcam:
+    type: unix-char
+    source: /dev/video0
+    path: /dev/video0

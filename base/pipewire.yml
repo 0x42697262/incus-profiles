@@ -1,0 +1,9 @@
+config: {}
+description: Configures audio using Pipewire
+devices:
+  pipewire:
+    path: /mnt/.sockets/pipewire-0
+    shift: true
+    source: /run/user/1000/pipewire-0
+    type: disk
+
