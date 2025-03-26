@@ -1,0 +1,3 @@
+config:
+  boot.autostart: false
+description: Disables boot at start up

@@ -1,0 +1,20 @@
+config:
+  cloud-init.vendor-data: |
+    #cloud-config
+    runcmd:
+    - echo 'export WAYLAND_DISPLAY=wayland-1' >> /home/chicken/.bashrc
+    - echo 'export XDG_SESSION_TYPE=wayland' >> /home/chicken/.bashrc
+    - echo 'export QT_QPA_PLATFORM=wayland' >> /home/chicken/.bashrc
+    - echo 'export XDG_RUNTIME_DIR=/mnt/.sockets/' >> /home/chicken/.bashrc
+          
+description: Configures Wayland
+devices:
+  graphics:
+    gid: "1000"
+    type: gpu
+    uid: "1000"
+  wayland:
+    path: /mnt/.sockets/wayland-1
+    shift: true
+    source: /run/user/1000/wayland-1
+    type: disk

@@ -1,0 +1,12 @@
+config:
+  cloud-init.vendor-data: |
+    #cloud-config
+    package_update: true
+    package_upgrade: true
+    package_reboot_if_required: true
+    packages:
+      - firefox
+      - git
+      - neovim
+      - vim
+

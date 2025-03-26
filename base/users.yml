@@ -1,0 +1,8 @@
+config:
+  cloud-init.vendor-data: |
+    #cloud-config
+    users:
+      - name: chicken
+        groups: wheel
+        sudo: ['ALL=(ALL) NOPASSWD:ALL']
+description: Configures the users
