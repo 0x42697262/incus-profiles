@@ -4,12 +4,13 @@ config:
     #cloud-config
     users:
       - name: chicken
-        groups: wheel
+        groups: wheel, video
         sudo: ['ALL=(ALL) NOPASSWD:ALL']
     runcmd:
     - mkdir -p /run/user/1000
     - chown chicken:chicken /run/user/1000
     - ln -sf /mnt/.sockets/wayland-1 /run/user/1000/wayland-1
+    - ln -sf /mnt/.sockets/pipewire-0 /run/user/1000/pipewire-0
     write_files:
       - path: /etc/profile
         append: true
@@ -29,3 +30,12 @@ devices:
     shift: true
     source: /run/user/1000/wayland-1
     type: disk
+  pipewire:
+    path: /mnt/.sockets/pipewire-0
+    shift: true
+    source: /run/user/1000/pipewire-0
+    type: disk
+  webcam:
+    type: unix-char
+    source: /dev/video0
+    path: /dev/video0
