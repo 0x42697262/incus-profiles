@@ -10,12 +10,14 @@ config:
     - mkdir -p /run/user/1000
     - chown chicken:chicken /run/user/1000
     - ln -sf /mnt/.sockets/wayland-1 /run/user/1000/wayland-1
+    - ln -sf /mnt/.sockets/X0 /tmp/.X11-unix/X0
     - ln -sf /mnt/.sockets/pipewire-0 /run/user/1000/pipewire-0
     write_files:
       - path: /etc/profile
         append: true
         content: |
           export WAYLAND_DISPLAY=wayland-1
+          export DISPLAY=:0
           export XDG_SESSION_TYPE=wayland
           export QT_QPA_PLATFORM=wayland
           export XDG_RUNTIME_DIR=/run/user/1000
@@ -29,6 +31,11 @@ devices:
     path: /mnt/.sockets/wayland-1
     shift: true
     source: /run/user/1000/wayland-1
+    type: disk
+  xwayland:
+    path: /mnt/.sockets/X0
+    shift: "true"
+    source: /tmp/.X11-unix/X0
     type: disk
   pipewire:
     path: /mnt/.sockets/pipewire-0
