@@ -46,6 +46,3 @@ devices:
     type: unix-char
     source: /dev/video0
     path: /dev/video0
-  nvidia-gpu:
-    pci: "0000:01:00.0"
-    type: gpu
