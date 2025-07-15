@@ -20,12 +20,17 @@ config:
           export XDG_SESSION_TYPE=wayland
           export QT_QPA_PLATFORM=wayland
           export XDG_RUNTIME_DIR=/run/user/1000
-description: Configures Wayland
+description: Made for osu!
 devices:
   graphics:
     gid: "1000"
     type: gpu
     uid: "1000"
+  osu:
+    path: /home/chicken/.local/share/osu/
+    shift: "true"
+    source: /home/_bird/osu
+    type: disk
   wayland:
     path: /mnt/.sockets/wayland-1
     shift: true
