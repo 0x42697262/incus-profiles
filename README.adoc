@@ -5,3 +5,27 @@ My profiles for https://linuxcontainers.org/incus/[Incus] that uses https://linu
 `base`: contains atomic or basic instance options (only use as reference)
 
 `profiles`: combines base profiles
+
+== Usage
+
+=== Fresh Minimal Setup
+
+To start a fresh clean install of incus, run.
+
+----
+# incus admin init --minimal
+----
+
+=== Importing Profiles
+
+----
+$ incus profile create osu < profile/osu.yml
+$ incus profile create gui < profile/gui.yml
+----
+
+=== Launching Images With Profiles
+
+----
+$ incus launch images:archlinux/cloud osu --profile default --profile osu --profile gui
+----
+
