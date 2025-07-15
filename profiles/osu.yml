@@ -29,7 +29,7 @@ devices:
   osu:
     path: /home/chicken/.local/share/osu/
     shift: "true"
-    source: /home/_bird/osu
+    source: /home/_birb/osu/
     type: disk
   wayland:
     path: /mnt/.sockets/wayland-1
@@ -46,7 +46,3 @@ devices:
     shift: true
     source: /run/user/1000/pipewire-0
     type: disk
-  webcam:
-    type: unix-char
-    source: /dev/video0
-    path: /dev/video0
