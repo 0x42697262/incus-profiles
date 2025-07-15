@@ -6,22 +6,66 @@ config:
       - name: chicken
         groups: wheel, video
         sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    packages:
+      - foot
+      - neovim
+      - fish
+      - glxgears
+      - ttf-bitstream-vera
+      - ttf-dejavu
+      - ttf-liberation
+      - ttf-meslo-nerd
+      - ttf-opensans
+      - freetype2
+      - cantarell-fonts
+      - opendesktop-fonts
+      - adobe-source-han-sans-cn-fonts
+      - adobe-source-han-sans-jp-fonts
+      - adobe-source-han-sans-kr-fonts
+      - awesome-terminal-fonts
+      - noto-fonts
+      - noto-fonts-cjk
+      - noto-fonts-emoji
+      - opendesktop-fonts
+      - xdg-desktop-portal-hyprland
+      - xdg-desktop-portal
+      - dbus-glib
+      - kdbusaddons
+      - libdbusmenu-glib
+      - libdbusmenu-gtk3
+      - sdbus-cpp
+    runcmd:
+    - chown -R chicken:chicken /home/chicken/
     write_files:
       - path: /etc/profile
         append: true
         content: |
           mkdir -p /run/user/1000
           chown chicken:chicken /run/user/1000
-          ln -sf /mnt/.sockets/wayland-1 /run/user/1000/wayland-1
           ln -sf /mnt/.sockets/X0 /tmp/.X11-unix/X0
+          ln -sf /mnt/.sockets/bus /run/user/1000/bus
           ln -sf /mnt/.sockets/pipewire-0 /run/user/1000/pipewire-0
-          export WAYLAND_DISPLAY=wayland-1
+          ln -sf /mnt/.sockets/wayland-1 /run/user/1000/wayland-1
+          export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
           export DISPLAY=:0
-          export XDG_SESSION_TYPE=wayland
           export QT_QPA_PLATFORM=wayland
+          export WAYLAND_DISPLAY=wayland-1
+          export XDG_CURRENT_DESKTOP=Hyprland
           export XDG_RUNTIME_DIR=/run/user/1000
+          export XDG_SESSION_TYPE=wayland
+
 description: Made for osu!
 devices:
+  dbus:
+    path: /run/dbus/system_bus_socket
+    shift: "true"
+    source: /run/dbus/system_bus_socket
+    type: disk
+  dbus_session:
+    path: /mnt/.sockets/bus
+    shift: "true"
+    source: /run/user/1000/bus
+    type: disk
   graphics:
     gid: "1000"
     type: gpu
