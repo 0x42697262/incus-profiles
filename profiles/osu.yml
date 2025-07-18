@@ -53,6 +53,7 @@ config:
           export XDG_CURRENT_DESKTOP=Hyprland
           export XDG_RUNTIME_DIR=/run/user/1000
           export XDG_SESSION_TYPE=wayland
+  environment.TZ: Asia/Tokyo
 
 description: Made for osu!
 devices:
