@@ -91,3 +91,9 @@ devices:
     shift: true
     source: /run/user/1000/pipewire-0
     type: disk
+  pulse:
+    bind: container
+    connect: unix:/run/user/1000/pulse/native
+    listen: unix:/mnt/.sockets/pulse-native
+    mode: "0777"
+    type: proxy
