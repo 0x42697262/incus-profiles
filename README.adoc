@@ -1,31 +1,87 @@
 = Incus Profiles
 
-My profiles for https://linuxcontainers.org/incus/[Incus] that uses https://linuxcontainers.org/[Linux Containers].
+Personal profiles for https://linuxcontainers.org/incus/[Incus].
 
-`base`: contains atomic or basic instance options (only use as reference)
+The GUI profile is intentionally generated from the current host login session. Wayland, X11, D-Bus, PipeWire, and Pulse sockets live under runtime paths such as `/run/user/$UID`, so hardcoding those paths in committed YAML makes new instances fragile.
 
-`profiles`: combines base profiles
+== Layout
 
-== Usage
+`profiles/`: importable fallback profiles and profile contents.
 
-=== Fresh Minimal Setup
+`scripts/`: host-aware profile generators.
 
-To start a fresh clean install of incus, run.
+`base/`: small reference fragments.
+
+== Fresh Minimal Setup
 
 ----
 # incus admin init --minimal
 ----
 
-=== Importing Profiles
+== Apply Profiles
+
+Generate the GUI profile from the active desktop session:
 
 ----
-$ incus profile create osu < profile/osu.yml
-$ incus profile create gui < profile/gui.yml
+$ ./scripts/apply-gui-profile.sh
 ----
 
-=== Launching Images With Profiles
+The script creates the profile if needed and replaces the existing profile contents. Preview the generated YAML first with:
 
 ----
-$ incus launch images:archlinux/cloud osu --profile default --profile osu --profile gui
+$ DRY_RUN=1 ./scripts/apply-gui-profile.sh
 ----
 
+Generate the osu! profile:
+
+----
+$ ./scripts/apply-osu-profile.sh
+----
+
+By default, the osu! profile mounts `$HOME/osu` when that directory exists. Override it with:
+
+----
+$ OSU_SOURCE=/path/to/osu ./scripts/apply-osu-profile.sh
+----
+
+== Launch
+
+Cloud-init package installation only runs during the instance's first boot. Importing or editing a profile does not retroactively install packages into an existing instance whose cloud-init already ran.
+
+The simplest path is:
+
+----
+$ ./scripts/launch-osu.sh
+----
+
+That script applies the generated profiles first, then launches the cloud image with the profiles attached.
+
+Manual equivalent:
+
+----
+$ incus launch images:archlinux/cloud osu --profile default --profile gui --profile osu
+----
+
+If you launch the image without `--profile gui --profile osu`, the profile cloud-init config is not present at first boot and the packages from `profiles/osu.yml` will not be preinstalled.
+
+== Useful Overrides
+
+The scripts default to a guest user named `chicken` with UID/GID `1000`.
+
+----
+$ GUEST_USER=chicken GUEST_UID=1000 GUEST_GID=1000 ./scripts/apply-gui-profile.sh
+----
+
+Optional devices are disabled by default:
+
+----
+$ INCLUDE_CAMERA=1 ./scripts/apply-gui-profile.sh
+$ INCLUDE_SYSTEM_DBUS=1 ./scripts/apply-gui-profile.sh
+----
+
+If your audio session uses a nonstandard socket path:
+
+----
+$ PULSE_SOCKET=/run/user/1000/pulse/native ./scripts/apply-gui-profile.sh
+$ PIPEWIRE_SOCKET=/run/user/1000/pipewire-0 ./scripts/apply-gui-profile.sh
+----

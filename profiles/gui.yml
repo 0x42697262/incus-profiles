@@ -4,50 +4,46 @@ config:
     #cloud-config
     users:
       - name: chicken
-        groups: wheel, video
+        groups: wheel, video, audio, input
         sudo: ['ALL=(ALL) NOPASSWD:ALL']
     write_files:
-      - path: /etc/profile
-        append: true
+      - path: /usr/local/bin/incus-gui-runtime
+        permissions: '0755'
         content: |
-          mkdir -p /run/user/1000
-          chown chicken:chicken /run/user/1000
-          ln -sf /mnt/.sockets/wayland-1 /run/user/1000/wayland-1
-          ln -sf /mnt/.sockets/X0 /tmp/.X11-unix/X0
-          ln -sf /mnt/.sockets/pipewire-0 /run/user/1000/pipewire-0
-          export WAYLAND_DISPLAY=wayland-1
-          export DISPLAY=:0
-          export XDG_SESSION_TYPE=wayland
-          export QT_QPA_PLATFORM=wayland
+          #!/bin/sh
+          set -eu
+
+          user="chicken"
+          runtime="/run/user/1000"
+
+          install -d -m 0700 -o "$user" -g "$user" "$runtime"
+          install -d -m 0755 -o "$user" -g "$user" "$runtime/pulse"
+          install -d -m 1777 /tmp/.X11-unix
+
+          [ -S /mnt/.sockets/wayland ] && ln -sf /mnt/.sockets/wayland "$runtime/wayland-0"
+          [ -S /mnt/.sockets/X0 ] && ln -sf /mnt/.sockets/X0 /tmp/.X11-unix/X0
+          [ -S /mnt/.sockets/bus ] && ln -sf /mnt/.sockets/bus "$runtime/bus"
+          [ -S /mnt/.sockets/pipewire-0 ] && ln -sf /mnt/.sockets/pipewire-0 "$runtime/pipewire-0"
+          [ -S /mnt/.sockets/pulse-native ] && ln -sf /mnt/.sockets/pulse-native "$runtime/pulse/native"
+      - path: /etc/profile.d/incus-gui.sh
+        permissions: '0644'
+        content: |
+          /usr/local/bin/incus-gui-runtime >/dev/null 2>&1 || true
+
           export XDG_RUNTIME_DIR=/run/user/1000
-description: Configures Wayland
+          export WAYLAND_DISPLAY=wayland-0
+          export DISPLAY=:0
+          export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+          export PULSE_SERVER=unix:/run/user/1000/pulse/native
+          export PIPEWIRE_REMOTE=pipewire-0
+          export XDG_SESSION_TYPE=wayland
+          export XDG_CURRENT_DESKTOP=Hyprland
+          export QT_QPA_PLATFORM=wayland
+    runcmd:
+      - /usr/local/bin/incus-gui-runtime
+description: Container-side GUI defaults. Use scripts/apply-gui-profile.sh to add host socket devices.
 devices:
   graphics:
     gid: "1000"
     type: gpu
     uid: "1000"
-  wayland:
-    path: /mnt/.sockets/wayland-1
-    shift: true
-    source: /run/user/1000/wayland-1
-    type: disk
-  xwayland:
-    path: /mnt/.sockets/X0
-    shift: "true"
-    source: /tmp/.X11-unix/X0
-    type: disk
-  pipewire:
-    path: /mnt/.sockets/pipewire-0
-    shift: true
-    source: /run/user/1000/pipewire-0
-    type: disk
-  pulse:
-    bind: container
-    connect: unix:/run/user/1000/pulse/native
-    listen: unix:/mnt/.sockets/pulse-native
-    mode: "0777"
-    type: proxy
-  webcam:
-    type: unix-char
-    source: /dev/video0
-    path: /dev/video0
