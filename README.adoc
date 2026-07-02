@@ -32,6 +32,8 @@ The script creates the profile if needed and replaces the existing profile conte
 $ DRY_RUN=1 ./scripts/apply-gui-profile.sh
 ----
 
+A full example of the generated `gui` and `osu` profiles is in link:examples/generated-profiles.adoc[examples/generated-profiles.adoc].
+
 Generate the osu! profile:
 
 ----

@@ -1,0 +1,135 @@
+= Sample Generated Profiles
+
+This is documentation-only sample output. The real generated profiles depend on the active host session, especially `XDG_RUNTIME_DIR`, `WAYLAND_DISPLAY`, `DISPLAY`, PipeWire, and Pulse socket paths.
+
+The generated profiles are what the launch command uses:
+
+----
+$ incus launch images:archlinux/cloud osu --profile default --profile gui --profile osu
+----
+
+== `incus profile show gui`
+
+----
+config:
+  boot.autostart: "false"
+  cloud-init.vendor-data: |
+    #cloud-config
+    users:
+      - name: chicken
+        uid: 1000
+        groups: wheel, video, audio, input
+        sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    write_files:
+      - path: /usr/local/bin/incus-gui-runtime
+        permissions: '0755'
+        content: |
+          #!/bin/sh
+          set -eu
+
+          user="chicken"
+          runtime="/run/user/1000"
+
+          install -d -m 0700 -o "$user" -g "$user" "$runtime"
+          install -d -m 0755 -o "$user" -g "$user" "$runtime/pulse"
+          install -d -m 1777 /tmp/.X11-unix
+
+          [ -S /mnt/.sockets/wayland ] && ln -sf /mnt/.sockets/wayland "$runtime/wayland-1"
+          [ -S /mnt/.sockets/X0 ] && ln -sf /mnt/.sockets/X0 /tmp/.X11-unix/X0
+          [ -S /mnt/.sockets/bus ] && ln -sf /mnt/.sockets/bus "$runtime/bus"
+          [ -S /mnt/.sockets/pipewire-0 ] && ln -sf /mnt/.sockets/pipewire-0 "$runtime/pipewire-0"
+          [ -S /mnt/.sockets/pulse-native ] && ln -sf /mnt/.sockets/pulse-native "$runtime/pulse/native"
+      - path: /etc/profile.d/incus-gui.sh
+        permissions: '0644'
+        content: |
+          /usr/local/bin/incus-gui-runtime >/dev/null 2>&1 || true
+
+          export XDG_RUNTIME_DIR=/run/user/1000
+          export WAYLAND_DISPLAY='wayland-1'
+          export DISPLAY=':0'
+          export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+          export PULSE_SERVER=unix:/run/user/1000/pulse/native
+          export PIPEWIRE_REMOTE=pipewire-0
+          export XDG_SESSION_TYPE=wayland
+          export XDG_CURRENT_DESKTOP='Hyprland'
+          export QT_QPA_PLATFORM='wayland;xcb'
+    runcmd:
+      - /usr/local/bin/incus-gui-runtime
+description: Generated GUI profile for the current host session.
+devices:
+  graphics:
+    type: gpu
+    uid: "1000"
+    gid: "1000"
+  wayland:
+    type: disk
+    source: '/run/user/1000/wayland-1'
+    path: '/mnt/.sockets/wayland'
+    shift: "true"
+  xwayland:
+    type: disk
+    source: '/tmp/.X11-unix/X0'
+    path: '/mnt/.sockets/X0'
+    shift: "true"
+  dbus_session:
+    type: disk
+    source: '/run/user/1000/bus'
+    path: '/mnt/.sockets/bus'
+    shift: "true"
+  pipewire:
+    type: disk
+    source: '/run/user/1000/pipewire-0'
+    path: '/mnt/.sockets/pipewire-0'
+    shift: "true"
+  pulse:
+    type: proxy
+    bind: container
+    connect: 'unix:/run/user/1000/pulse/native'
+    listen: 'unix:/mnt/.sockets/pulse-native'
+    mode: "0777"
+----
+
+== `incus profile show osu`
+
+----
+config:
+  cloud-init.user-data: |
+    #cloud-config
+    packages:
+      - foot
+      - neovim
+      - fish
+      - glxgears
+      - ttf-bitstream-vera
+      - ttf-dejavu
+      - ttf-liberation
+      - ttf-meslo-nerd
+      - ttf-opensans
+      - freetype2
+      - cantarell-fonts
+      - opendesktop-fonts
+      - adobe-source-han-sans-cn-fonts
+      - adobe-source-han-sans-jp-fonts
+      - adobe-source-han-sans-kr-fonts
+      - awesome-terminal-fonts
+      - noto-fonts
+      - noto-fonts-cjk
+      - noto-fonts-emoji
+      - xdg-desktop-portal-hyprland
+      - xdg-desktop-portal
+      - dbus-glib
+      - kdbusaddons
+      - libdbusmenu-glib
+      - libdbusmenu-gtk3
+      - sdbus-cpp
+    runcmd:
+      - mkdir -p /home/chicken/.local/share/osu
+      - chown -R chicken:chicken /home/chicken/.local
+description: Generated osu! profile.
+devices:
+  osu:
+    type: disk
+    source: '/home/example/osu'
+    path: /home/chicken/.local/share/osu
+    shift: "true"
+----
