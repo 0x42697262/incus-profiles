@@ -8,7 +8,7 @@ The GUI profile is intentionally generated from the current host login session. 
 
 `profiles/`: importable fallback profiles and profile contents.
 
-`scripts/`: host-aware profile generators.
+`scripts/`: host-aware profile generators (see also NixOS Guests below).
 
 `base/`: small reference fragments.
 
@@ -44,6 +44,61 @@ By default, the osu! profile mounts `$HOME/osu` when that directory exists. Over
 
 ----
 $ OSU_SOURCE=/path/to/osu ./scripts/apply-osu-profile.sh
+----
+
+== NixOS Guests
+
+`apply-gui-profile.sh` does half its work through `cloud-init.vendor-data`: the guest user, the runtime directory, the socket symlinks, and the `/etc/profile.d` exports. NixOS container images do not ship cloud-init, so on a NixOS guest all of that is silently ignored and only `devices:` takes effect.
+
+Use the NixOS variant instead:
+
+----
+$ ./scripts/apply-nixos-gui-profile.sh
+$ DRY_RUN=1 ./scripts/apply-nixos-gui-profile.sh   # preview
+----
+
+It performs the same host-session discovery and accepts the same overrides, but emits session variables as `environment.*` instance keys rather than profile.d exports -- which also means a non-login `incus exec` sees them -- and no cloud-init at all.
+
+This script only passes things in. Everything cloud-init would have done is the guest's own responsibility, declared however that distribution prefers:
+
+* define the guest user with uid `GUEST_UID`
+* create `/run/user/$GUEST_UID` owned by that user
+* link the mounted sockets to the names clients expect there -- `wayland-0`, `pipewire-0`, and `/tmp/.X11-unix/X0`
+* install GPU userspace (Mesa) and fonts
+
+Both halves are required; neither works alone.
+
+Guest socket paths are normalized, unlike in `apply-gui-profile.sh`:
+
+[cols="1,1,1"]
+|===
+| Host | Guest mount | Guest symlink
+
+| `$XDG_RUNTIME_DIR/wayland-N`
+| `/mnt/.sockets/wayland`
+| `/run/user/$GUEST_UID/wayland-0`
+
+| `/tmp/.X11-unix/XN`
+| `/mnt/.sockets/x11`
+| `/tmp/.X11-unix/X0`
+
+| `$XDG_RUNTIME_DIR/pipewire-0`
+| `/mnt/.sockets/pipewire`
+| `/run/user/$GUEST_UID/pipewire-0`
+
+| `$XDG_RUNTIME_DIR/pulse/native`
+| `/mnt/.sockets/pulse-native`
+| (used directly via `PULSE_SERVER`)
+|===
+
+No host display number reaches the guest, so the guest's half is identical whether the compositor came up on `wayland-0` or `wayland-1`. `GUEST_UID` must match the guest user's uid, and it should be pinned there rather than left to whatever `useradd` allocates -- the `gpu` device ownership and the runtime directory path both depend on it.
+
+Session D-Bus is not passed through, so desktop portals are unavailable.
+
+Launch with your own NixOS image rather than one from `images:`, since these are built locally:
+
+----
+$ incus launch <nixos-image> <instance> --profile default --profile nixos-gui
 ----
 
 == Launch
